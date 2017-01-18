@@ -7,4 +7,6 @@ Source file provided by E4040 course, excerpted from deep learning tutorial. htt
 
 2. Additional noise injection, translation, rotation and flipping as data augmentation approaches to improve the test accuracy.
 
-3. RNN structure for corrupted image restoration. 
+3. CNN structure for corrupted image restoration.
+
+![alt tag](https://github.com/OddNo7/Deep learning---CNN-RNN/master/hw3_4_12399.png)
