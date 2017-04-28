@@ -1,4 +1,4 @@
-# Deep-learning---CNN-RNN
+# CNN-image-restoration
 Theano Neural network implementation: convolutional neural network and recursive neural network. 
 
 
