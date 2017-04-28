@@ -1,7 +1,6 @@
 # Deep-learning---CNN-RNN
-Neural network implementation: convolutional neural network and recursive neural network. Homework for E4040 course.
+Theano Neural network implementation: convolutional neural network and recursive neural network. 
 
-Source file provided by E4040 course, excerpted from deep learning tutorial. http://deeplearning.net/tutorial/ 
 
 1. Basic CNN structure for CIFAR-10 dataset classification problem. 
 
@@ -9,4 +8,4 @@ Source file provided by E4040 course, excerpted from deep learning tutorial. htt
 
 3. CNN structure for corrupted image restoration.
 
-![alt tag](https://github.com/OddNo7/Deep-learning---CNN-RNN/blob/master/hw3_4_12399.png)
+![alt tag](https://github.com/OddNo7/Deep-learning---CNN-RNN/blob/master/round_12399.png)

@@ -1,16 +1,3 @@
-"""
-Source Code for Homework 3 of ECBM E4040, Fall 2016, Columbia University
-
-This code contains implementation of some basic components in neural network.
-
-Instructor: Prof. Zoran Kostic
-
-This code is based on
-[1] http://deeplearning.net/tutorial/logreg.html
-[2] http://deeplearning.net/tutorial/mlp.html
-[3] http://deeplearning.net/tutorial/lenet.html
-"""
-
 from __future__ import print_function
 
 import timeit
@@ -23,13 +10,10 @@ import theano.tensor as T
 from theano.tensor.nnet import conv2d
 from theano.tensor.signal import pool
 
-class LogisticRegression(object):
-    """Multi-class Logistic Regression Class
 
-    The logistic regression is fully described by a weight matrix :math:`W`
-    and bias vector :math:`b`. Classification is done by projecting data
-    points onto a set of hyperplanes, the distance to which is used to
-    determine a class membership probability.
+class LogisticRegression(object):
+    """
+    Multi-class Logistic Regression Class
     """
 
     def __init__(self, input, n_in, n_out):
@@ -91,30 +75,11 @@ class LogisticRegression(object):
         """Return the mean of the negative log-likelihood of the prediction
         of this model under a given target distribution.
 
-        .. math::
-
-            \frac{1}{|\mathcal{D}|} \mathcal{L} (\theta=\{W,b\}, \mathcal{D}) =
-            \frac{1}{|\mathcal{D}|} \sum_{i=0}^{|\mathcal{D}|}
-                \log(P(Y=y^{(i)}|x^{(i)}, W,b)) \\
-            \ell (\theta=\{W,b\}, \mathcal{D})
-
         :type y: theano.tensor.TensorType
         :param y: corresponds to a vector that gives for each example the
                   correct label
 
-        Note: we use the mean instead of the sum so that
-              the learning rate is less dependent on the batch size
         """
-        # y.shape[0] is (symbolically) the number of rows in y, i.e.,
-        # number of examples (call it n) in the minibatch
-        # T.arange(y.shape[0]) is a symbolic vector which will contain
-        # [0,1,2,... n-1] T.log(self.p_y_given_x) is a matrix of
-        # Log-Probabilities (call it LP) with one row per example and
-        # one column per class LP[T.arange(y.shape[0]),y] is a vector
-        # v containing [LP[0,y[0]], LP[1,y[1]], LP[2,y[2]], ...,
-        # LP[n-1,y[n-1]]] and T.mean(LP[T.arange(y.shape[0]),y]) is
-        # the mean (across minibatch examples) of the elements in v,
-        # i.e., the mean log-likelihood across the minibatch.
         return -T.mean(T.log(self.p_y_given_x)[T.arange(y.shape[0]), y])
 
     def errors(self, y):
@@ -141,16 +106,11 @@ class LogisticRegression(object):
         else:
             raise NotImplementedError()
 
+
 class HiddenLayer(object):
     def __init__(self, rng, input, n_in, n_out, W=None, b=None,
                  activation=T.tanh):
         """
-        Typical hidden layer of a MLP: units are fully-connected and have
-        sigmoidal activation function. Weight matrix W is of shape (n_in,n_out)
-        and the bias vector b is of shape (n_out,).
-        NOTE : The nonlinearity used here is tanh
-
-        Hidden unit activation is given by: tanh(dot(input,W) + b)
 
         :type rng: numpy.random.RandomState
         :param rng: a random number generator used to initialize weights
@@ -198,12 +158,12 @@ class HiddenLayer(object):
         )
         # parameters of the model
         self.params = [self.W, self.b]
-        
+
+
 class LeNetConvLayer(object):
     """Pool Layer of a convolutional network """
 
-    def __init__(self, rng, input, filter_shape, image_shape, activation = T.tanh):
-       
+    def __init__(self, rng, input, filter_shape, image_shape, activation=T.tanh):
         assert image_shape[1] == filter_shape[1]
         self.input = input
 
@@ -236,17 +196,22 @@ class LeNetConvLayer(object):
             input_shape=image_shape
         )
 
-        
-        self.output = activation(conv_out + self.b.dimshuffle('x', 0, 'x', 'x'))
+        self.output = activation(
+            conv_out + self.b.dimshuffle('x', 0, 'x', 'x'))
 
         # store parameters of this layer
         self.params = [self.W, self.b]
 
         # keep track of model input
         self.input = input
-        
+
+
 class LeNetPoolLayer(object):
-    def __init__(self,input,poolsize):
+    """
+        Implementation of the pooling layer
+    """
+
+    def __init__(self, input, poolsize):
         self.input = input
         pooled_out = pool.pool_2d(
             input=input,
@@ -255,10 +220,11 @@ class LeNetPoolLayer(object):
         )
         self.output = pooled_out
 
+
 class LeNetConvPoolLayer(object):
     """Pool Layer of a convolutional network """
 
-    def __init__(self, rng, input, filter_shape, image_shape, poolsize=(2, 2), activation = T.tanh):
+    def __init__(self, rng, input, filter_shape, image_shape, poolsize=(2, 2), activation=T.tanh):
         """
         Allocate a LeNetConvPoolLayer with shared variable internal parameters.
 
@@ -324,28 +290,34 @@ class LeNetConvPoolLayer(object):
         # reshape it to a tensor of shape (1, n_filters, 1, 1). Each bias will
         # thus be broadcasted across mini-batches and feature map
         # width & height
-        self.output = activation(pooled_out + self.b.dimshuffle('x', 0, 'x', 'x'))
+        self.output = activation(
+            pooled_out + self.b.dimshuffle('x', 0, 'x', 'x'))
 
         # store parameters of this layer
         self.params = [self.W, self.b]
 
         # keep track of model input
         self.input = input
-        
-        
-def drop(input, p=0.5): 
+
+
+def drop(input, p=0.5):
     """
+    Implementation of dropout
+
     :type input: numpy.array
     :param input: layer or weight matrix on which dropout is applied
-    
+
     :type p: float or double between 0. and 1. 
     :param p: p probability of NOT dropping out a unit, therefore (1.-p) is the drop rate.
-    
-    """     
+
+    """
     rng = numpy.random.RandomState(1234)
     srng = T.shared_randomstreams.RandomStreams(rng.randint(999999))
-    mask = srng.binomial(n=1, p=p, size=input.shape, dtype=theano.config.floatX)
+    mask = srng.binomial(n=1, p=p, size=input.shape,
+                         dtype=theano.config.floatX)
     return input * mask
+
+
 class DropoutHiddenLayer(object):
     def __init__(self, rng, is_train, input, n_in, n_out, W=None, b=None,
                  activation=T.tanh, p=0.5):
@@ -354,7 +326,7 @@ class DropoutHiddenLayer(object):
 
         :type rng: numpy.random.RandomState
         :param rng: a random number generator used to initialize weights
-        
+
         :type is_train: theano.iscalar   
         :param is_train: indicator pseudo-boolean (int) for switching between training and prediction
 
@@ -370,7 +342,7 @@ class DropoutHiddenLayer(object):
         :type activation: theano.Op or function
         :param activation: Non linearity to be applied in the hidden
                            layer
-                           
+
         :type p: float or double
         :param p: probability of NOT dropping out a unit   
         """
@@ -394,68 +366,77 @@ class DropoutHiddenLayer(object):
             b_values = numpy.zeros((n_out,), dtype=theano.config.floatX)
             b = theano.shared(value=b_values, name='b', borrow=True)
 
-        
         self.W = W
         self.b = b
 
         lin_output = T.dot(input, self.W) + self.b
-        
+
         output = activation(lin_output)
-        
-        # multiply output and drop -> in an approximation the scaling effects cancel out 
-        train_output = drop(output,p)
-        
-        #is_train is a pseudo boolean theano variable for switching between training and prediction 
-        self.output = T.switch(T.neq(is_train, 0), train_output, p*output)
-        
+
+        # multiply output and drop -> in an approximation the scaling effects
+        # cancel out
+        train_output = drop(output, p)
+
+        # is_train is a pseudo boolean theano variable for switching between
+        # training and prediction
+        self.output = T.switch(T.neq(is_train, 0), train_output, p * output)
+
         # parameters of the model
         self.params = [self.W, self.b]
 
-        
+
 class bn_layer(object):
+    """
+    Implementation of batch normalization layer
+    """
+
     def __init__(self, inputs, input_shape, gamma=None, beta=None):
         self.input = inputs
-        self.mean = T.mean(self.input,axis=0)
-        self.mean = T.repeat(self.mean.reshape((1, input_shape[1], input_shape[2], input_shape[3])),input_shape[0],0)
-        self.std = T.std(self.input,axis=0)
-        self.std = T.repeat(self.std.reshape((1, input_shape[1], input_shape[2], input_shape[3])),input_shape[0],0)
+        self.mean = T.mean(self.input, axis=0)
+        self.mean = T.repeat(self.mean.reshape(
+            (1, input_shape[1], input_shape[2], input_shape[3])), input_shape[0], 0)
+        self.std = T.std(self.input, axis=0)
+        self.std = T.repeat(self.std.reshape(
+            (1, input_shape[1], input_shape[2], input_shape[3])), input_shape[0], 0)
         if gamma is None:
-            temp_gamma = numpy.ones(input_shape,dtype=theano.config.floatX)
+            temp_gamma = numpy.ones(input_shape, dtype=theano.config.floatX)
 
-        self.gamma = theano.shared(value=temp_gamma,name='gamma',borrow=True)
+        self.gamma = theano.shared(value=temp_gamma, name='gamma', borrow=True)
 
         if beta is None:
-            temp_beta = numpy.full(input_shape,0.5,dtype=theano.config.floatX)
+            temp_beta = numpy.full(
+                input_shape, 0.5, dtype=theano.config.floatX)
 
-        self.beta = theano.shared(value=temp_beta,name='beta',borrow=True)
+        self.beta = theano.shared(value=temp_beta, name='beta', borrow=True)
         norm = T.nnet.bn.batch_normalization(self.input,
-                                self.gamma,
-                                self.beta,
-                                self.mean,
-                                self.std)
-        self.output = norm 
+                                             self.gamma,
+                                             self.beta,
+                                             self.mean,
+                                             self.std)
+        self.output = norm
         self.params = [self.gamma, self.beta]
 
+
 def upsampling(input):
-    temp = T.extra_ops.repeat(input,2,axis=2)
-    temp = T.extra_ops.repeat(temp,2,axis=3)
+    temp = T.extra_ops.repeat(input, 2, axis=2)
+    temp = T.extra_ops.repeat(temp, 2, axis=3)
     return temp
 
-def train_nn(train_model, validate_model, test_model,
-            n_train_batches, n_valid_batches, n_test_batches, n_epochs,
-            verbose = True):
 
+def train_nn(train_model, validate_model, test_model,
+             n_train_batches, n_valid_batches, n_test_batches, n_epochs,
+             verbose=True):
     # early-stopping parameters
     patience = 10000  # look as this many examples regardless
     patience_increase = 2  # wait this much longer when a new best is
-                           # found
+    # found
     improvement_threshold = 0.995  # a relative improvement of this much is
-                                   # considered significant
+    # considered significant
     validation_frequency = min(n_train_batches, patience // 2)
-                                  # go through this many
-                                  # minibatche before checking the network
-                                  # on the validation set; in this case we
-                                  # check every epoch
+    # go through this many
+    # minibatche before checking the network
+    # on the validation set; in this case we
+    # check every epoch
 
     best_validation_loss = numpy.inf
     best_iter = 0
@@ -484,17 +465,17 @@ def train_nn(train_model, validate_model, test_model,
 
                 if verbose:
                     print('epoch %i, minibatch %i/%i, validation error %f %%' %
-                        (epoch,
-                         minibatch_index + 1,
-                         n_train_batches,
-                         this_validation_loss * 100.))
+                          (epoch,
+                           minibatch_index + 1,
+                           n_train_batches,
+                           this_validation_loss * 100.))
 
                 # if we got the best validation score until now
                 if this_validation_loss < best_validation_loss:
 
-                    #improve patience if loss improvement is good enough
-                    if this_validation_loss < best_validation_loss *  \
-                       improvement_threshold:
+                    # improve patience if loss improvement is good enough
+                    if this_validation_loss < best_validation_loss * \
+                            improvement_threshold:
                         patience = max(patience, iter * patience_increase)
 
                     # save best validation score and iteration number
@@ -505,7 +486,7 @@ def train_nn(train_model, validate_model, test_model,
                     test_losses = [
                         test_model(i)
                         for i in range(n_test_batches)
-                    ]
+                        ]
                     test_score = numpy.mean(test_losses)
 
                     if verbose:
@@ -533,4 +514,3 @@ def train_nn(train_model, validate_model, test_model,
     print(('The training process for function ' +
            calframe[1][3] +
            ' ran for %.2fm' % ((end_time - start_time) / 60.)), file=sys.stderr)
-
